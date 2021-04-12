@@ -15,5 +15,6 @@ namespace PicabuDummyTests
             DotNetEnv.Env.Load(env);
         }
         public static string BaseUrl => DotNetEnv.Env.GetString("BASE_URL");
+        public static double ImplicitWait => double.Parse(DotNetEnv.Env.GetString("IMPLICIT_WAIT"));
     }
 }

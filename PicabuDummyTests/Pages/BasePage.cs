@@ -7,6 +7,7 @@ using NLog;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using OpenQA.Selenium.Interactions;
 
 namespace PicabuDummyTests.Pages
 {
@@ -14,6 +15,7 @@ namespace PicabuDummyTests.Pages
     {
         protected WebDriverWait wait;
         protected IWebDriver driver;
+        protected Actions actions;
         protected Pages type;
         protected string[] dateFormats = { "dd.MM.yyyy", "dd-MM-yyyy", "dd/MM/yyyy" };
         protected DateTime inputFromDate;
@@ -34,6 +36,7 @@ namespace PicabuDummyTests.Pages
         public BasePage(IWebDriver driver)
         {
             this.driver = driver;
+            actions = new Actions(driver);
             PageFactory.InitElements(driver, this);
             wait = new WebDriverWait(this.driver, TimeSpan.FromSeconds(5));
         }
@@ -41,8 +44,10 @@ namespace PicabuDummyTests.Pages
         public void NavigatePage(string url = "")
         {
             switch (type)
-            {
+            {             
                 case Pages.MainPage:
+                    driver.Manage().Window.Maximize();
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(Environment.ImplicitWait);
                     driver.Navigate().GoToUrl(Environment.BaseUrl);
                     logger.Info($"Navigated to {Environment.BaseUrl}");
                     break;
@@ -51,22 +56,39 @@ namespace PicabuDummyTests.Pages
             }
         }
 
-        protected void SrollToBottom()
+        //protected void ScrollToBottom()
+        //{
+        //    ((IJavaScriptExecutor)driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
+        //    while (true)
+        //    {
+        //        try { if (postsBottom.Displayed) break; }
+        //        catch (NoSuchElementException ex) { }
+        //        finally { ((IJavaScriptExecutor) driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)"); }
+        //    }
+        //}
+
+        public List<string> GetPostsRates()
         {
-            ((IJavaScriptExecutor)driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
+            //ScrollToBottom();
+            var result = new List<string>();
             while (true)
             {
                 try { if (postsBottom.Displayed) break; }
                 catch (NoSuchElementException ex) { }
-                finally { ((IJavaScriptExecutor) driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)"); }
+                finally
+                {
+                    foreach (IWebElement post in postsRates)
+                    {
+                        try
+                        {
+                            var rate = post.Text;
+                            if (!result.Contains(rate)) result.Add(rate);
+                        }
+                        catch (StaleElementReferenceException ex) { continue; }
+                    }
+                    ((IJavaScriptExecutor)driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
+                }
             }
-        }
-
-        public List<string> GetPostsRates()
-        {
-            SrollToBottom();
-            var result = new List<string>();
-            foreach(IWebElement post in postsRates) result.Add(post.Text);
             return result;
         }
 
@@ -76,11 +98,27 @@ namespace PicabuDummyTests.Pages
             filtersButton.Click();
         }
 
-        public List<string> GetPostsDateTimes()
+        public List<DateTime> GetPostsDateTimes()
         {
-            SrollToBottom();
-            var result = new List<string>();
-            foreach (IWebElement dateTime in postsDateTimes) result.Add(dateTime.GetAttribute("datetime"));
+            var result = new List<DateTime>();
+            while (true)
+            {
+                try { if (postsBottom.Displayed) break; }
+                catch (NoSuchElementException ex) { }
+                finally 
+                {
+                    foreach (IWebElement dt in postsDateTimes)
+                    {
+                        try
+                        {
+                            var dateTime = Convert.ToDateTime(dt.GetAttribute("datetime"));
+                            if (!result.Contains(dateTime)) result.Add(dateTime);
+                        }
+                        catch (StaleElementReferenceException ex) { continue; }
+                    }                         
+                    ((IJavaScriptExecutor)driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)"); 
+                }
+            }
             result.Sort();
             return result;
         }

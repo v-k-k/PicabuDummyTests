@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace PicabuDummyTests.Pages
 {
@@ -39,6 +40,9 @@ namespace PicabuDummyTests.Pages
 
         [FindsBy(How = How.XPath, Using = "//button[contains(text(),'Показать посты')]")]
         private IWebElement showPostsButton;
+        
+        [FindsBy(How = How.XPath, Using = "//div[@class='stories-feed__spinner']/div[@class='player']/div[@class='player__overlay']")]
+        private IWebElement animation;
 
         private IWebElement LoginField => authorizationHeader.FindElement(By.XPath("..//form//input[@name='username']"));
         private IWebElement PasswordField => authorizationHeader.FindElement(By.XPath("..//form//input[@name='password']"));
@@ -98,7 +102,7 @@ namespace PicabuDummyTests.Pages
 
         public bool IsCalendarWidgetShown()
         {
-            calendar.Click();
+            actions.MoveToElement(calendar).Click().Build().Perform();
             return calendarHead.Displayed;
         }
 
@@ -108,13 +112,30 @@ namespace PicabuDummyTests.Pages
             string inputToContent = (string)((IJavaScriptExecutor)driver).ExecuteScript("return document.querySelector('input[data-type=\"to\"]').value");
             inputFromDate = Convert.ToDateTime(inputFromContent);
             inputToDate = Convert.ToDateTime(inputToContent);
-            int daysBefore = new Random().Next(1, 30);
+            int daysBefore = new Random().Next(10, 30);
             inputFromDate = inputFromDate.AddDays(-daysBefore);
-            var startDate = inputFromDate.ToString("dd/MM/yyyy").Replace(".", "/");
-            IWebElement fieldFrom = calendarHead.FindElement(By.XPath("div/div[1]/input"));
-            fieldFrom.Clear();
-            fieldFrom.SendKeys(startDate);
+            inputToDate = inputToDate.AddDays(5 - daysBefore);
+            var dates = new List<DateTime> { inputFromDate, inputToDate };
+            for (int i = 0; i < dates.Count; i++)
+            {
+                IWebElement field = calendarHead.FindElement(By.XPath($"div/div[{i + 1}]/input"));
+                field.Clear();
+                field.SendKeys(dates[i].ToString("dd/MM/yyyy").Replace(".", "/"));
+                Thread.Sleep(1000);
+            }
             return showPostsButton.Displayed;
+        }
+
+        public bool IsAnimationDisplayed()
+        {
+            showPostsButton.Click();
+            return animation.Displayed;
+        }
+
+        public bool IsPostsDatesInSelectedRange()
+        {
+            var dates = GetPostsDateTimes();
+            return dates[0] > inputFromDate && dates[dates.Count - 1] < inputToDate;
         }
     }
 }

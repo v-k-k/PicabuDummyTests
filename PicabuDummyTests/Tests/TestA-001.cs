@@ -10,8 +10,7 @@ namespace PicabuDummyTests
     [TestClass]
     public class TestSuiteA : BaseTest
     {
-        [TestCategory("Dummy 001")]
-        [TestMethod]
+        [TestMethod, Priority(1), TestCategory("Dummy 001")]
         public void TestCase_A001()
         {
             var mainPage = new MainPage(Driver);
@@ -22,19 +21,18 @@ namespace PicabuDummyTests
             Assert.IsFalse(mainPage.IsDateSelected(), "Дата выбрана");
         }
 
-        [TestCategory("Dummy 002")]
-        [TestMethod]
+        [TestMethod, Priority(2), TestCategory("Dummy 002")]
         public void TestCase_A002()
         {
+            bool descOrder = true;
             var mainPage = new MainPage(Driver);
             mainPage.NavigatePage();
             mainPage.GoToBest();
             Assert.IsTrue(mainPage.IsBestSelected());
-            Assert.IsTrue(mainPage.IsPostsSorted(true));
+            Assert.IsTrue(mainPage.IsPostsSorted(descOrder));
         }
 
-        [TestCategory("Dummy 003")]
-        [TestMethod]
+        [TestMethod, Priority(3), TestCategory("Dummy 003")]
         public void TestCase_A003()
         {
             var mainPage = new MainPage(Driver);
@@ -43,6 +41,8 @@ namespace PicabuDummyTests
             Assert.IsTrue(mainPage.IsExpectedChecked("За сегодня"));
             Assert.IsTrue(mainPage.IsCalendarWidgetShown());
             Assert.IsTrue(mainPage.IsShowPostsButtonActive());
+            Assert.IsTrue(mainPage.IsAnimationDisplayed());
+            Assert.IsTrue(mainPage.IsPostsDatesInSelectedRange());
         }
     }
 }
