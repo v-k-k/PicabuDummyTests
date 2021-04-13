@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Text;
 using OpenQA.Selenium.Interactions;
 using System.Threading;
+using PicabuDummyTests.Utils;
 
 namespace PicabuDummyTests.Pages
 {
@@ -70,13 +71,18 @@ namespace PicabuDummyTests.Pages
 
         protected void UpdateDatesInCalendarFields(IWebElement calendarHead, DateTime from, DateTime to)
         {
-            var dates = new List<DateTime> { from, to };
+            var dates = new List<DateHelper> { new DateHelper("from", from), new DateHelper("to", to) };
             for (int i = 0; i < dates.Count; i++)
             {
                 IWebElement field = calendarHead.FindElement(By.XPath($"div/div[{i + 1}]/input"));
-                field.Clear();
-                field.SendKeys(dates[i].ToString("dd/MM/yyyy").Replace(".", "/"));
-                Thread.Sleep(1000);
+                while (true)
+                {
+                    var stringifiedDate = dates[i].date.ToString("dd/MM/yyyy").Replace(".", "/");
+                    var content = (string)((IJavaScriptExecutor)driver).ExecuteScript($"return document.querySelector('input[data-type=\"{dates[i].name}\"]').value");
+                    if (content == stringifiedDate) break;
+                    field.Clear();
+                    field.SendKeys(stringifiedDate);
+                }
             }
         }
 
@@ -134,10 +140,5 @@ namespace PicabuDummyTests.Pages
             result.Sort();
             return result;
         }
-        
-        //protected void OpenPostLink()
-        //{
-        //    postsLinks[0].Click();
-        //}
     }
 }
