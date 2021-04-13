@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using OpenQA.Selenium.Interactions;
+using System.Threading;
 
 namespace PicabuDummyTests.Pages
 {
@@ -32,6 +33,9 @@ namespace PicabuDummyTests.Pages
 
         [FindsBy(How = How.XPath, Using = "//span[contains(text(), 'Фильтры')]")]
         protected IWebElement filtersButton;
+        
+        [FindsBy(How = How.XPath, Using = "//h2/a")]
+        protected IList<IWebElement> postsLinks;
 
         public BasePage(IWebDriver driver)
         {
@@ -56,21 +60,29 @@ namespace PicabuDummyTests.Pages
             }
         }
 
-        //protected void ScrollToBottom()
-        //{
-        //    ((IJavaScriptExecutor)driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)");
-        //    while (true)
-        //    {
-        //        try { if (postsBottom.Displayed) break; }
-        //        catch (NoSuchElementException ex) { }
-        //        finally { ((IJavaScriptExecutor) driver).ExecuteScript("window.scrollTo(0, document.body.scrollHeight)"); }
-        //    }
-        //}
-
-        public List<string> GetPostsRates()
+        protected void MemoizeDatesFromCalendarField()
         {
-            //ScrollToBottom();
-            var result = new List<string>();
+            string inputFromContent = (string)((IJavaScriptExecutor)driver).ExecuteScript("return document.querySelector('input[data-type=\"from\"]').value");
+            string inputToContent = (string)((IJavaScriptExecutor)driver).ExecuteScript("return document.querySelector('input[data-type=\"to\"]').value");
+            inputFromDate = Convert.ToDateTime(inputFromContent);
+            inputToDate = Convert.ToDateTime(inputToContent);
+        }
+
+        protected void UpdateDatesInCalendarFields(IWebElement calendarHead, DateTime from, DateTime to)
+        {
+            var dates = new List<DateTime> { from, to };
+            for (int i = 0; i < dates.Count; i++)
+            {
+                IWebElement field = calendarHead.FindElement(By.XPath($"div/div[{i + 1}]/input"));
+                field.Clear();
+                field.SendKeys(dates[i].ToString("dd/MM/yyyy").Replace(".", "/"));
+                Thread.Sleep(1000);
+            }
+        }
+
+        public List<int> GetPostsRates()
+        {
+            var result = new List<int>();
             while (true)
             {
                 try { if (postsBottom.Displayed) break; }
@@ -81,7 +93,7 @@ namespace PicabuDummyTests.Pages
                     {
                         try
                         {
-                            var rate = post.Text;
+                            var rate = int.Parse(post.Text);
                             if (!result.Contains(rate)) result.Add(rate);
                         }
                         catch (StaleElementReferenceException ex) { continue; }
@@ -122,5 +134,10 @@ namespace PicabuDummyTests.Pages
             result.Sort();
             return result;
         }
+        
+        //protected void OpenPostLink()
+        //{
+        //    postsLinks[0].Click();
+        //}
     }
 }

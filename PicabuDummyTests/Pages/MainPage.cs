@@ -43,6 +43,12 @@ namespace PicabuDummyTests.Pages
         
         [FindsBy(How = How.XPath, Using = "//div[@class='stories-feed__spinner']/div[@class='player']/div[@class='player__overlay']")]
         private IWebElement animation;
+        
+        [FindsBy(How = How.XPath, Using = "//option[@selected]")]
+        private IWebElement selectedOption;
+        
+        [FindsBy(How = How.XPath, Using = "//select")]
+        private IWebElement selectList;
 
         private IWebElement LoginField => authorizationHeader.FindElement(By.XPath("..//form//input[@name='username']"));
         private IWebElement PasswordField => authorizationHeader.FindElement(By.XPath("..//form//input[@name='password']"));
@@ -90,14 +96,14 @@ namespace PicabuDummyTests.Pages
             var rates = GetPostsRates();
             var comparable = rates.GetRange(0, rates.Count);
             comparable.Sort();
-            if (descOrder) comparable.Reverse();            
+            if (descOrder) comparable.Reverse();
             return rates.SequenceEqual(comparable);
         }
 
         public bool IsExpectedChecked(string expected)
         {
             OpenFilters();
-            return checkedFilter.Text.Equals(expected);
+            return checkedFilter.Text == expected;
         }
 
         public bool IsCalendarWidgetShown()
@@ -106,23 +112,14 @@ namespace PicabuDummyTests.Pages
             return calendarHead.Displayed;
         }
 
+
         public bool IsShowPostsButtonActive()
         {
-            string inputFromContent = (string)((IJavaScriptExecutor)driver).ExecuteScript("return document.querySelector('input[data-type=\"from\"]').value");
-            string inputToContent = (string)((IJavaScriptExecutor)driver).ExecuteScript("return document.querySelector('input[data-type=\"to\"]').value");
-            inputFromDate = Convert.ToDateTime(inputFromContent);
-            inputToDate = Convert.ToDateTime(inputToContent);
+            MemoizeDatesFromCalendarField();
             int daysBefore = new Random().Next(10, 30);
             inputFromDate = inputFromDate.AddDays(-daysBefore);
             inputToDate = inputToDate.AddDays(5 - daysBefore);
-            var dates = new List<DateTime> { inputFromDate, inputToDate };
-            for (int i = 0; i < dates.Count; i++)
-            {
-                IWebElement field = calendarHead.FindElement(By.XPath($"div/div[{i + 1}]/input"));
-                field.Clear();
-                field.SendKeys(dates[i].ToString("dd/MM/yyyy").Replace(".", "/"));
-                Thread.Sleep(1000);
-            }
+            UpdateDatesInCalendarFields(calendarHead, inputFromDate, inputToDate);
             return showPostsButton.Displayed;
         }
 
@@ -135,7 +132,32 @@ namespace PicabuDummyTests.Pages
         public bool IsPostsDatesInSelectedRange()
         {
             var dates = GetPostsDateTimes();
-            return dates[0] > inputFromDate && dates[dates.Count - 1] < inputToDate;
+            return dates[0] >= inputFromDate.AddDays(-1) && dates[dates.Count - 1] <= inputToDate;
+        }
+
+        public bool IsDesiredOptionChosen(string optionName)
+        {
+            OpenFilters();
+            return selectedOption.Text == optionName;
+        }
+
+        public int IsShowListOpened()
+        {
+            selectList.Click();
+            var options = selectList.FindElements(By.XPath("option"));
+            return options.Count;
+        }
+
+        public int OpenPostLinks(int maxLinks)
+        {
+            for (int i=0; i<maxLinks; i++)
+            {
+                Thread.Sleep(10000);
+                //OpenPostLink();
+                postsLinks[i].Click();
+                driver.SwitchTo().Window(driver.WindowHandles.First());
+            }
+            return driver.WindowHandles.Count;
         }
     }
 }

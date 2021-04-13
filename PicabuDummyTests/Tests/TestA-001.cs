@@ -44,5 +44,18 @@ namespace PicabuDummyTests
             Assert.IsTrue(mainPage.IsAnimationDisplayed());
             Assert.IsTrue(mainPage.IsPostsDatesInSelectedRange());
         }
+
+        [TestMethod, Priority(4), TestCategory("Dummy 004")]
+        public void TestCase_A004()
+        {
+            var desiredOption = "показывать";
+            var expectedTabs = 4;
+            var mainPage = new MainPage(Driver);
+            mainPage.NavigatePage();
+            Assert.IsTrue(mainPage.IsDesiredOptionChosen(desiredOption));
+            Assert.AreNotEqual(mainPage.IsShowListOpened(), 0);
+
+            Assert.AreEqual(mainPage.OpenPostLinks(expectedTabs - 1), expectedTabs);
+        }
     }
 }
