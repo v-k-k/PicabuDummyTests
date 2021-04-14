@@ -22,6 +22,7 @@ namespace PicabuDummyTests
         }
 
         [TestMethod, Priority(2), TestCategory("Dummy 002")]
+        [ExpectedException(typeof(AssertFailedException))]
         public void TestCase_A002()
         {
             bool descOrder = true;
@@ -46,6 +47,7 @@ namespace PicabuDummyTests
         }
 
         [TestMethod, Priority(4), TestCategory("Dummy 004")]
+        [ExpectedException(typeof(AssertFailedException))]
         public void TestCase_A004()
         {
             var desiredOption = "показывать";
@@ -54,8 +56,9 @@ namespace PicabuDummyTests
             mainPage.NavigatePage();
             Assert.IsTrue(mainPage.IsDesiredOptionChosen(desiredOption));
             Assert.AreNotEqual(mainPage.IsShowListOpened(), 0);
-
             Assert.AreEqual(mainPage.OpenPostLinks(expectedTabs - 1), expectedTabs);
+            Assert.IsTrue(mainPage.IsArticlesContainPreview(expectedTabs - 1));
+            Assert.IsTrue(mainPage.IsArticlesDisplayedWithoutPreview(expectedTabs - 1));
         }
     }
 }

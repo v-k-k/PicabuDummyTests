@@ -20,7 +20,7 @@ namespace PicabuDummyTests
         {
             Environment.Initialize();
             var factory = new WebDriverFactory();
-            Driver = factory.Create(BrowserType.Firefox);
+            Driver = factory.Create(BrowserType.Chrome);
         }
 
         [TestCleanup]

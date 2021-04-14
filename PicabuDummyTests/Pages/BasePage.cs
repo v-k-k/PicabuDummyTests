@@ -38,6 +38,9 @@ namespace PicabuDummyTests.Pages
         [FindsBy(How = How.XPath, Using = "//h2/a")]
         protected IList<IWebElement> postsLinks;
 
+        [FindsBy(How = How.XPath, Using = "//article")]
+        protected IList<IWebElement> articles;
+
         public BasePage(IWebDriver driver)
         {
             this.driver = driver;
@@ -51,6 +54,7 @@ namespace PicabuDummyTests.Pages
             switch (type)
             {             
                 case Pages.MainPage:
+                    driver.Manage().Cookies.DeleteAllCookies();
                     driver.Manage().Window.Maximize();
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(Environment.ImplicitWait);
                     driver.Navigate().GoToUrl(Environment.BaseUrl);

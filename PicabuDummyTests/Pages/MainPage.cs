@@ -1,5 +1,7 @@
 ﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.PageObjects;
+using WaitHelpers = SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -126,13 +128,13 @@ namespace PicabuDummyTests.Pages
         public bool IsAnimationDisplayed()
         {
             showPostsButton.Click();
-            return true;// animation.Displayed;
+            return animation.Displayed;
         }
 
         public bool IsPostsDatesInSelectedRange()
         {
             var dates = GetPostsDateTimes();
-            return dates[0] >= inputFromDate.AddDays(-1) && dates[dates.Count - 1] <= inputToDate;
+            return dates[0] >= inputFromDate.AddDays(-1) && dates[dates.Count - 1] < inputToDate.AddDays(1);
         }
 
         public bool IsDesiredOptionChosen(string optionName)
@@ -152,11 +154,42 @@ namespace PicabuDummyTests.Pages
         {
             for (int i=0; i<maxLinks; i++)
             {
-                Thread.Sleep(10000);
                 postsLinks[i].Click();
-                driver.SwitchTo().Window(driver.WindowHandles.First());
+                var windows = driver.WindowHandles;
+                driver.SwitchTo().Window(windows.Last());
+                wait.Until(WaitHelpers.ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.CssSelector(".story__title-link")));
+                driver.SwitchTo().Window(windows.First());
             }
             return driver.WindowHandles.Count;
+        }
+
+        public bool IsArticlesContainPreview(int maxArticles)
+        {
+            driver.Navigate().Refresh();
+            var targetArticles = articles.Take(maxArticles);
+            foreach (IWebElement article in targetArticles)
+            {
+                if (!article.FindElement(By.XPath("div[2]/div[1]")).GetAttribute("class").Contains("content")) return false;
+            }
+            return true;
+        }
+
+        public void RollUpPosts()
+        {
+            OpenFilters();
+            var selectElement = new SelectElement(selectList);
+            selectElement.SelectByText("сворачивать");
+        }
+
+        public bool IsArticlesDisplayedWithoutPreview(int maxArticles)
+        {
+            RollUpPosts();
+            var targetArticles = articles.Take(maxArticles);
+            foreach (IWebElement article in targetArticles)
+            {
+                if (article.FindElement(By.XPath("div[2]/div[1]")).GetAttribute("class").Contains("content")) return false;
+            }
+            return true;
         }
     }
 }

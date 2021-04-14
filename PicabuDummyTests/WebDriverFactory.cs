@@ -13,25 +13,26 @@ namespace PicabuDummyTests
     {
         public IWebDriver Create(BrowserType browserType)
         {
+            var browserVersion = VersionHelper.GetLocalVersion(browserType);
             switch (browserType)
-            {
-                case BrowserType.Chrome:
-                    new DriverManager().SetUpDriver(new ChromeConfig());
-                    ChromeOptions chromeOptions = new ChromeOptions();
-                    chromeOptions.AddArgument("--ignore-certificate-errors");
-                    chromeOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-                    return new ChromeDriver(chromeOptions);
-                case BrowserType.Firefox:
-                    new DriverManager().SetUpDriver(new FirefoxConfig());
-                    FirefoxOptions firefoxOptions = new FirefoxOptions
-                    {
-                        AcceptInsecureCertificates = true
-                    };
-                    firefoxOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-                    return new FirefoxDriver(firefoxOptions);
-                default:
-                    throw new ArgumentOutOfRangeException("No such browser exists");
-            }
+                {
+                    case BrowserType.Chrome:
+                        new DriverManager().SetUpDriver(new ChromeConfig(), browserVersion);
+                        ChromeOptions chromeOptions = new ChromeOptions();
+                        chromeOptions.AddArgument("--ignore-certificate-errors");
+                        chromeOptions.PageLoadStrategy = PageLoadStrategy.Eager;
+                        return new ChromeDriver(chromeOptions);
+                    case BrowserType.Firefox:
+                        new DriverManager().SetUpDriver(new FirefoxConfig(), browserVersion);
+                        FirefoxOptions firefoxOptions = new FirefoxOptions
+                        {
+                            AcceptInsecureCertificates = true
+                        };
+                        firefoxOptions.PageLoadStrategy = PageLoadStrategy.Eager;
+                        return new FirefoxDriver(firefoxOptions);
+                    default:
+                        throw new ArgumentOutOfRangeException("No such browser exists");
+                }
         }
     }
 }
