@@ -58,7 +58,7 @@ namespace PicabuDummyTests.Pages
                     driver.Manage().Window.Maximize();
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(Environment.ImplicitWait);
                     driver.Navigate().GoToUrl(Environment.BaseUrl);
-                    logger.Info($"Navigated to {Environment.BaseUrl}");
+                    logger.Error($"Navigated to {Environment.BaseUrl}");
                     break;
                 default:
                     break;
