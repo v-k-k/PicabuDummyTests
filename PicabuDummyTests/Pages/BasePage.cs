@@ -13,7 +13,7 @@ using PicabuDummyTests.Utils;
 
 namespace PicabuDummyTests.Pages
 {
-    class BasePage
+    class BasePage : ItemsBasis
     {
         protected WebDriverWait wait;
         protected IWebDriver driver;
@@ -22,7 +22,6 @@ namespace PicabuDummyTests.Pages
         protected string[] dateFormats = { "dd.MM.yyyy", "dd-MM-yyyy", "dd/MM/yyyy" };
         protected DateTime inputFromDate;
         protected DateTime inputToDate;
-        public static Logger logger = LogManager.GetCurrentClassLogger();
 
         protected IWebElement postsBottom => driver.FindElement(By.XPath("//section[contains(text(),'Отличная работа, все прочитано!')]"));
                 
@@ -54,11 +53,9 @@ namespace PicabuDummyTests.Pages
             switch (type)
             {             
                 case Pages.MainPage:
-                    driver.Manage().Cookies.DeleteAllCookies();
-                    driver.Manage().Window.Maximize();
-                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(Environment.ImplicitWait);
+                    LogInfo($"Navigating to {Environment.BaseUrl}");
                     driver.Navigate().GoToUrl(Environment.BaseUrl);
-                    logger.Error($"Navigated to {Environment.BaseUrl}");
+                    LogDebug($"Navigated to {Environment.BaseUrl}");
                     break;
                 default:
                     break;

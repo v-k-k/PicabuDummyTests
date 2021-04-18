@@ -6,13 +6,15 @@ using System.Collections.Generic;
 using System.Text;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
+using OpenQA.Selenium.Support.Events;
 
 namespace PicabuDummyTests
 {
     class WebDriverFactory
     {
-        public IWebDriver Create(BrowserType browserType)
+        public EventFiringWebDriver Create(BrowserType browserType)
         {
+            IWebDriver wrappedDriver;
             var browserVersion = VersionHelper.GetLocalVersion(browserType);
             switch (browserType)
                 {
@@ -21,18 +23,21 @@ namespace PicabuDummyTests
                         ChromeOptions chromeOptions = new ChromeOptions();
                         chromeOptions.AddArgument("--ignore-certificate-errors");
                         chromeOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-                        return new ChromeDriver(chromeOptions);
+                        wrappedDriver = new ChromeDriver(chromeOptions);
+                        break; 
                     case BrowserType.Firefox:
                         new DriverManager().SetUpDriver(new FirefoxConfig(), browserVersion);
-                        FirefoxOptions firefoxOptions = new FirefoxOptions
-                        {
-                            AcceptInsecureCertificates = true
-                        };
+                        FirefoxOptions firefoxOptions = new FirefoxOptions { AcceptInsecureCertificates = true };
                         firefoxOptions.PageLoadStrategy = PageLoadStrategy.Eager;
-                        return new FirefoxDriver(firefoxOptions);
+                        wrappedDriver = new FirefoxDriver(firefoxOptions);
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException("No such browser exists");
                 }
+            wrappedDriver.Manage().Cookies.DeleteAllCookies();
+            wrappedDriver.Manage().Window.Maximize();
+            wrappedDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(Environment.ImplicitWait);
+            return new EventFiringWebDriver(wrappedDriver);
         }
     }
 }
