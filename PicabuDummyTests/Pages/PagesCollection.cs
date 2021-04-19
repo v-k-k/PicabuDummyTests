@@ -5,9 +5,9 @@ using SeleniumExtras.PageObjects;
 
 namespace PicabuDummyTests.Pages
 {
-    public enum Pages
+    public enum PagesCollection
     {
-        MainPage, BestPage, HottestPage
+        MainPage, BestPage
     }
     //public static class PageGenerator
     //{

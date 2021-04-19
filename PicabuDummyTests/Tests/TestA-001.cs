@@ -3,6 +3,8 @@ using OpenQA.Selenium;
 using PicabuDummyTests.Pages;
 using System;
 using System.Threading;
+using PicabuDummyTests.Bases;
+
 
 namespace PicabuDummyTests
 {
@@ -14,8 +16,7 @@ namespace PicabuDummyTests
         public void TestCase_A001()
         {
             var mainPage = new MainPage(Driver);
-            mainPage.NavigatePage();
-            Assert.IsTrue(mainPage.IsHottestSelected(), "Bкладка 'Горячее' нe открыта");
+            mainPage.NavigateAndCheckPageTab(mainPage.tab);
             Assert.IsTrue(mainPage.IsAuthorizationFormVisible(), "He отображена форма логина");
             Assert.IsTrue(mainPage.IsCommentOfTheDayVisible(), "Bиджет 'коментарий дня' нe отображен");
             Assert.IsFalse(mainPage.IsDateSelected(), "Дата выбрана");
@@ -26,24 +27,22 @@ namespace PicabuDummyTests
         public void TestCase_A002()
         {
             bool descOrder = true;
-            var mainPage = new MainPage(Driver);
-            mainPage.NavigatePage();
-            mainPage.GoToBest();
-            Assert.IsTrue(mainPage.IsBestSelected());
-            Assert.IsTrue(mainPage.IsPostsSorted(descOrder));
+            var bestPage = new BestPage(Driver);
+            bestPage.NavigateAndCheckPageTab(bestPage.tab);
+            Assert.IsTrue(bestPage.IsPostsSorted(descOrder));
         }
 
         [TestMethod, Priority(3), TestCategory("Dummy 003")]
         public void TestCase_A003()
         {
-            var mainPage = new MainPage(Driver);
-            mainPage.NavigatePage();
-            mainPage.GoToBest();
-            Assert.IsTrue(mainPage.IsExpectedChecked("За сегодня"));
-            Assert.IsTrue(mainPage.IsCalendarWidgetShown());
-            Assert.IsTrue(mainPage.IsShowPostsButtonActive());
-            Assert.IsTrue(mainPage.IsAnimationDisplayed());
-            Assert.IsTrue(mainPage.IsPostsDatesInSelectedRange());
+            var keyword = "За сегодня";
+            var bestPage = new BestPage(Driver);
+            bestPage.NavigateAndCheckPageTab(bestPage.tab);
+            Assert.IsTrue(bestPage.IsExpectedChecked(keyword));
+            Assert.IsTrue(bestPage.IsCalendarWidgetShown());
+            Assert.IsTrue(bestPage.IsShowPostsButtonActive());
+            Assert.IsTrue(bestPage.IsAnimationDisplayed());
+            Assert.IsTrue(bestPage.IsPostsDatesInSelectedRange());
         }
 
         [TestMethod, Priority(4), TestCategory("Dummy 004")]
@@ -53,7 +52,7 @@ namespace PicabuDummyTests
             var desiredOption = "показывать";
             var expectedTabs = 4;
             var mainPage = new MainPage(Driver);
-            mainPage.NavigatePage();
+            mainPage.NavigateAndCheckPageTab(mainPage.tab);
             Assert.IsTrue(mainPage.IsDesiredOptionChosen(desiredOption));
             Assert.AreNotEqual(mainPage.IsShowListOpened(), 0);
             Assert.AreEqual(mainPage.OpenPostLinks(expectedTabs - 1), expectedTabs);

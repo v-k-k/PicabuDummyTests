@@ -8,75 +8,32 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using PicabuDummyTests.Bases;
+using PicabuDummyTests.Pages;
 
-namespace PicabuDummyTests.Pages
+namespace PicabuDummyTests
 {
-    class MainPage : BasePage
+    partial class MainPage : BasePage
     {
+        private IWebElement LoginField => driver.FindElement(authorizationHeader).FindElement(loginField);
+        private IWebElement PasswordField => driver.FindElement(authorizationHeader).FindElement(passwordField);
+        private IList<IWebElement> PostsLinks => driver.FindElements(postsLinks);
+        private IList<IWebElement> Articles => driver.FindElements(articles);
+
         public MainPage(IWebDriver driver) :
             base(driver)
         {
-            this.type = Pages.MainPage;              
-        }
-        
-        [FindsBy(How = How.XPath, Using = "//span[@class='radio radio_checked']/following-sibling::span")]
-        private IWebElement checkedFilter;
-
-        [FindsBy(How = How.XPath, Using = "//a[contains(text(),'Горячее')]/..")]
-        private IWebElement hottest;
-
-        [FindsBy(How = How.XPath, Using = "//a[contains(text(),'Лучшее')]/..")]
-        private IWebElement best;
-
-        [FindsBy(How = How.XPath, Using = "//div[contains(text(),'Авторизация')]")]
-        private IWebElement authorizationHeader;
-        
-        [FindsBy(How = How.XPath, Using = "//*[contains(text(),'Комментарий дня')]")]
-        private IWebElement commentOfDay;
-        
-        [FindsBy(How = How.XPath, Using = "//p[@data-role='calendar']")]
-        private IWebElement calendar;
-
-        [FindsBy(How = How.XPath, Using = "//div[@class='calendar-head']")]
-        private IWebElement calendarHead;
-
-        [FindsBy(How = How.XPath, Using = "//button[contains(text(),'Показать посты')]")]
-        private IWebElement showPostsButton;
-        
-        [FindsBy(How = How.XPath, Using = "//div[@class='stories-feed__spinner']/div[@class='player']/div[@class='player__overlay']")]//
-        private IWebElement animation;
-        
-        [FindsBy(How = How.XPath, Using = "//option[@selected]")]
-        private IWebElement selectedOption;
-        
-        [FindsBy(How = How.XPath, Using = "//select")]
-        private IWebElement selectList;
-
-        private IWebElement LoginField => authorizationHeader.FindElement(By.XPath("..//form//input[@name='username']"));
-        private IWebElement PasswordField => authorizationHeader.FindElement(By.XPath("..//form//input[@name='password']"));
-
-        private bool IsTabSelected(IWebElement tab)
-        {
-            return tab.GetAttribute("class").Contains("menu__item_current");
-        }
-        public bool IsHottestSelected()
-        {
-            return IsTabSelected(hottest);
-        }
-
-        public bool IsBestSelected()
-        {
-            return IsTabSelected(best);
+            this.type = PagesCollection.MainPage;
         }
 
         public bool IsAuthorizationFormVisible()
         { 
-            return authorizationHeader.Displayed && LoginField.Displayed && PasswordField.Displayed;
+            return driver.FindElement(authorizationHeader).Displayed && LoginField.Displayed && PasswordField.Displayed;
         }
 
         public bool IsCommentOfTheDayVisible()
         {
-            return commentOfDay.Displayed;
+            return driver.FindElement(commentOfDay).Displayed;
         }
 
         public bool IsDateSelected()
@@ -88,65 +45,16 @@ namespace PicabuDummyTests.Pages
             return validDate;
         }
 
-        public void GoToBest()
-        {
-            best.Click();
-        }
-
-        public bool IsPostsSorted(bool descOrder=false)
-        {
-            var rates = GetPostsRates();
-            var comparable = rates.GetRange(0, rates.Count);
-            comparable.Sort();
-            if (descOrder) comparable.Reverse();
-            return rates.SequenceEqual(comparable);
-        }
-
-        public bool IsExpectedChecked(string expected)
-        {
-            OpenFilters();
-            return checkedFilter.Text == expected;
-        }
-
-        public bool IsCalendarWidgetShown()
-        {
-            actions.MoveToElement(calendar).Click().Build().Perform();
-            return calendarHead.Displayed;
-        }
-
-
-        public bool IsShowPostsButtonActive()
-        {
-            MemoizeDatesFromCalendarField();
-            int daysBefore = new Random().Next(10, 30);
-            inputFromDate = inputFromDate.AddDays(-daysBefore);
-            inputToDate = inputToDate.AddDays(1 - daysBefore);
-            UpdateDatesInCalendarFields(calendarHead, inputFromDate, inputToDate);
-            return showPostsButton.Displayed;
-        }
-
-        public bool IsAnimationDisplayed()
-        {
-            showPostsButton.Click();
-            return animation.Displayed;
-        }
-
-        public bool IsPostsDatesInSelectedRange()
-        {
-            var dates = GetPostsDateTimes();
-            return dates[0] >= inputFromDate.AddDays(-1) && dates[dates.Count - 1] < inputToDate.AddDays(1);
-        }
-
         public bool IsDesiredOptionChosen(string optionName)
         {
             OpenFilters();
-            return selectedOption.Text == optionName;
+            return driver.FindElement(selectedOption).Text == optionName;
         }
 
         public int IsShowListOpened()
         {
-            selectList.Click();
-            var options = selectList.FindElements(By.XPath("option"));
+            driver.FindElement(selectList).Click();
+            var options = driver.FindElement(selectList).FindElements(dropdownOption);
             return options.Count;
         }
 
@@ -154,10 +62,10 @@ namespace PicabuDummyTests.Pages
         {
             for (int i=0; i<maxLinks; i++)
             {
-                postsLinks[i].Click();
+                PostsLinks[i].Click();
                 var windows = driver.WindowHandles;
                 driver.SwitchTo().Window(windows.Last());
-                wait.Until(WaitHelpers.ExpectedConditions.VisibilityOfAllElementsLocatedBy(By.CssSelector(".story__title-link")));
+                wait.Until(WaitHelpers.ExpectedConditions.VisibilityOfAllElementsLocatedBy(postTitle));
                 driver.SwitchTo().Window(windows.First());
             }
             return driver.WindowHandles.Count;
@@ -166,10 +74,10 @@ namespace PicabuDummyTests.Pages
         public bool IsArticlesContainPreview(int maxArticles)
         {
             driver.Navigate().Refresh();
-            var targetArticles = articles.Take(maxArticles);
+            var targetArticles = Articles.Take(maxArticles);
             foreach (IWebElement article in targetArticles)
             {
-                if (!article.FindElement(By.XPath("div[2]/div[1]")).GetAttribute("class").Contains("content")) return false;
+                if (!article.FindElement(articlePreview).GetAttribute("class").Contains("content")) return false;
             }
             return true;
         }
@@ -177,17 +85,17 @@ namespace PicabuDummyTests.Pages
         public void RollUpPosts()
         {
             OpenFilters();
-            var selectElement = new SelectElement(selectList);
+            var selectElement = new SelectElement(driver.FindElement(selectList));
             selectElement.SelectByText("сворачивать");
         }
 
         public bool IsArticlesDisplayedWithoutPreview(int maxArticles)
         {
             RollUpPosts();
-            var targetArticles = articles.Take(maxArticles);
+            var targetArticles = Articles.Take(maxArticles);
             foreach (IWebElement article in targetArticles)
             {
-                if (article.FindElement(By.XPath("div[2]/div[1]")).GetAttribute("class").Contains("content")) return false;
+                if (article.FindElement(articlePreview).GetAttribute("class").Contains("content")) return false;
             }
             return true;
         }

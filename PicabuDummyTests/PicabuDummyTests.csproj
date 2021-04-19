@@ -7,6 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Allure.Commons" Version="3.5.0.34" />
 		<PackageReference Include="DotNetEnv" Version="2.1.1" />
 		<PackageReference Include="DotNetSeleniumExtras.PageObjects.Core" Version="3.12.0" />
 		<PackageReference Include="DotNetSeleniumExtras.WaitHelpers" Version="3.11.0" />
@@ -24,6 +25,10 @@
 	  <None Update="NLog.config">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="PageActions\" />
 	</ItemGroup>
 
 </Project>

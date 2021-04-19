@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PicabuDummyTests
+namespace PicabuDummyTests.Bases
 {
     public class BaseTest : ItemsBasis
     {
-        private ScreenshotTaker ScreenshotTaker { get; set; }
+        //private ScreenshotTaker ScreenshotTaker { get; set; }
         public EventFiringWebDriver Driver { get; private set; }
         public TestContext TestContext { get; set; }
 
