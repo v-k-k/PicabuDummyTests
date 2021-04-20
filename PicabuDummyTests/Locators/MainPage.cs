@@ -1,5 +1,4 @@
 ﻿using OpenQA.Selenium;
-using PicabuDummyTests.Pages;
 using System;
 using System.Collections.Generic;
 using System.Text;

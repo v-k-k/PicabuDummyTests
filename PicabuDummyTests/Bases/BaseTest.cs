@@ -2,6 +2,7 @@
 using NLog;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Events;
+using PicabuDummyTests.PageActions;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,9 +11,13 @@ namespace PicabuDummyTests.Bases
 {
     public class BaseTest : ItemsBasis
     {
+        PagesCollectionContainer pages;
+        ActionsCollection pageActions;
         //private ScreenshotTaker ScreenshotTaker { get; set; }
         public EventFiringWebDriver Driver { get; private set; }
         public TestContext TestContext { get; set; }
+
+        internal ActionsCollection PageActions => pageActions;
 
         [AssemblyInitialize]
         public void InitEnvironment()
@@ -27,6 +32,8 @@ namespace PicabuDummyTests.Bases
             Environment.Initialize();
             var factory = new WebDriverFactory();
             Driver = factory.Create(BrowserType.Chrome);
+            pages = new PagesCollectionContainer(Driver);
+            pageActions = new ActionsCollection(pages);
             //ScreenshotTaker = new ScreenshotTaker(Driver, TestContext);
         }
 
@@ -36,6 +43,8 @@ namespace PicabuDummyTests.Bases
             try
             {
                 //TakeScreenshotForTestFailure();
+                pageActions.ClearCollection();
+                pages.ClearCollection();
                 if (Driver == null) return;
             }
             catch (Exception e)

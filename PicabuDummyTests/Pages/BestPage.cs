@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using PicabuDummyTests.Bases;
-using PicabuDummyTests.Pages;
 using PicabuDummyTests.Utils;
 using WaitHelpers = SeleniumExtras.WaitHelpers;
 
@@ -19,17 +19,27 @@ namespace PicabuDummyTests
         public BestPage(IWebDriver driver) :
             base(driver)
         {
-            this.type = PagesCollection.BestPage;
+            this.type = RegisteredPages.BestPage;
         }
 
-        public bool IsExpectedChecked(string expected)
+        public new BestPage OpenFilters() { return (BestPage)base.OpenFilters(); }
+
+        public BestPage MemoizeDatesFromCalendarField() { return (BestPage)base.MemoizeDatesFromCalendarField(); }
+
+        public BestPage UpdateDatesInCalendarFields()
         {
-            OpenFilters();
-            return driver.FindElement(checkedFilter).Text == expected;
+            return (BestPage)base.UpdateDatesInCalendarFields(driver.FindElement(calendarHead), inputFromDate, inputToDate);
         }
 
-        public List<int> GetPostsRates()
+        public BestPage IsExpectedChecked(string expected)
         {
+            Assert.IsTrue(driver.FindElement(checkedFilter).Text == expected, $"{expected} wasn't occur");
+            return this;
+        }
+
+        private List<int> GetPostsRates()
+        {
+            LogInfo("Getting posts rates");
             var result = new List<int>();
             while (true)
             {
@@ -49,20 +59,26 @@ namespace PicabuDummyTests
                     ((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.scrollDown);
                 }
             }
+            LogDebug("All posts rates collected");
             return result;
         }
 
-        public bool IsPostsSorted(bool descOrder = false)
+        public BestPage IsPostsSorted(bool descOrder = false)
         {
+            LogInfo("Check the posts rates sorting");
             var rates = GetPostsRates();
             var comparable = rates.GetRange(0, rates.Count);
             comparable.Sort();
+            LogDebug($"Descent order is {descOrder}");
             if (descOrder) comparable.Reverse();
-            return rates.SequenceEqual(comparable);
+            Assert.IsTrue(rates.SequenceEqual(comparable), "Posts wasn't sorted correctly");
+            LogDebug("Posts rates sorted correctly");
+            return this;
         }
 
-        public List<DateTime> GetPostsDateTimes()
+        private List<DateTime> GetPostsDateTimes()
         {
+            LogInfo("Getting posts datetimes");
             var result = new List<DateTime>();
             while (true)
             {
@@ -83,35 +99,44 @@ namespace PicabuDummyTests
                 }
             }
             result.Sort();
+            LogDebug("All posts datetimes collected");
             return result;
         }
 
-        public bool IsCalendarWidgetShown()
+        public BestPage IsCalendarWidgetShown()
         {
             actions.MoveToElement(driver.FindElement(calendar)).Click().Build().Perform();
-            return driver.FindElement(calendarHead).Displayed;
+            Assert.IsTrue(driver.FindElement(calendarHead).Displayed, "Calendar widget wasn't shown");
+            return this;
         }
 
-        public bool IsShowPostsButtonActive()
+        public BestPage IsShowPostsButtonActive()
         {
-            MemoizeDatesFromCalendarField();
+            Assert.IsTrue(driver.FindElement(showPostsButton).Displayed, "Show posts button wasn't active");
+            return this;
+        }
+
+        public BestPage SetRandomDatesRange()
+        {
             int daysBefore = new Random().Next(10, 30);
             inputFromDate = inputFromDate.AddDays(-daysBefore);
             inputToDate = inputToDate.AddDays(1 - daysBefore);
-            UpdateDatesInCalendarFields(driver.FindElement(calendarHead), inputFromDate, inputToDate);
-            return driver.FindElement(showPostsButton).Displayed;
+            return this;
         }
 
-        public bool IsAnimationDisplayed()
+        public BestPage IsAnimationDisplayed()
         {
             driver.FindElement(showPostsButton).Click();
-            return driver.FindElement(animation).Displayed;
+            Assert.IsTrue(driver.FindElement(animation).Displayed, "Animation wasn't displayed");
+            return this;
         }
 
-        public bool IsPostsDatesInSelectedRange()
+        public BestPage IsPostsDatesInSelectedRange()
         {
             var dates = GetPostsDateTimes();
-            return dates[0] >= inputFromDate.AddDays(-1) && dates[dates.Count - 1] < inputToDate.AddDays(1);
+            bool result = dates[0] >= inputFromDate.AddDays(-1) && dates[dates.Count - 1] < inputToDate.AddDays(1);
+            Assert.IsTrue(result, "Posts dates wasn't in selected range");
+            return this;
         }
     }
 }

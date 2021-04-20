@@ -10,7 +10,6 @@ using System.Text;
 using OpenQA.Selenium.Interactions;
 using System.Threading;
 using PicabuDummyTests.Utils;
-using PicabuDummyTests.Pages;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PicabuDummyTests.Bases
@@ -20,13 +19,13 @@ namespace PicabuDummyTests.Bases
         protected WebDriverWait wait;
         protected IWebDriver driver;
         protected Actions actions;
-        protected PagesCollection type;
-        protected string[] dateFormats = { "dd.MM.yyyy", "dd-MM-yyyy", "dd/MM/yyyy" };
+        protected RegisteredPages type;
         protected DateTime inputFromDate;
         protected DateTime inputToDate;
+        protected string[] dateFormats = { "dd.MM.yyyy", "dd-MM-yyyy", "dd/MM/yyyy" };
+        protected readonly IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
+        protected readonly System.Globalization.DateTimeStyles dateTimeStyles = System.Globalization.DateTimeStyles.None;
 
-        private readonly IFormatProvider invariantCulture = System.Globalization.CultureInfo.InvariantCulture;
-        private readonly System.Globalization.DateTimeStyles dateTimeStyles = System.Globalization.DateTimeStyles.None;
         private By filtersButton = By.XPath("//span[contains(text(), 'Фильтры')]");
 
         public virtual bool IsSelected(By tab)
@@ -45,12 +44,12 @@ namespace PicabuDummyTests.Bases
         {
             LogInfo($"Navigating to {Environment.BaseUrl}");
             driver.Navigate().GoToUrl(Environment.BaseUrl);
-            LogDebug($"Navigated to {Environment.BaseUrl}");
+            LogDebug($"Successfully navigated to {Environment.BaseUrl}");
             string pageName;
             string errorMessage;
             switch (type)
             {    
-                case PagesCollection.BestPage:
+                case RegisteredPages.BestPage:
                     driver.FindElement(tab).Click();
                     pageName = "best";
                     errorMessage = "Bкладка 'Лучшее' нe открыта";
@@ -65,17 +64,20 @@ namespace PicabuDummyTests.Bases
             LogDebug($"Checked the {pageName} page tab");
         }
 
-        protected void MemoizeDatesFromCalendarField(string dateFormat = null)
+        protected BasePage MemoizeDatesFromCalendarField(string dateFormat = null)
         {
+            LogDebug("Memoizing dates from calendar fields");
             if (dateFormat == null) dateFormat = dateFormats[2];
             string inputFromContent = (string)((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.getDateFrom);
             string inputToContent = (string)((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.getDateTo);
             inputFromDate = DateTime.ParseExact(inputFromContent, dateFormat, invariantCulture, dateTimeStyles);
             inputToDate = DateTime.ParseExact(inputToContent, dateFormat, invariantCulture, dateTimeStyles);
+            return this;
         }
 
-        protected void UpdateDatesInCalendarFields(IWebElement calendarHead, DateTime from, DateTime to, string dateFormat = null)
+        protected BasePage UpdateDatesInCalendarFields(IWebElement calendarHead, DateTime from, DateTime to, string dateFormat = null)
         {
+            LogDebug("Updating dates in calendar fields");
             if (dateFormat == null) dateFormat = dateFormats[2];
             var dates = new List<DateHelper> { new DateHelper("from", from), new DateHelper("to", to) };
             for (int i = 0; i < dates.Count; i++)
@@ -90,12 +92,15 @@ namespace PicabuDummyTests.Bases
                     field.SendKeys(stringifiedDate);
                 }
             }
+            return this;
         }
 
-        protected void OpenFilters()
+        protected BasePage OpenFilters()
         {
+            LogDebug("Opening filters");
             wait.Until(WaitHelpers.ExpectedConditions.ElementToBeClickable(filtersButton));
             driver.FindElement(filtersButton).Click();
+            return this;
         }
 
     }

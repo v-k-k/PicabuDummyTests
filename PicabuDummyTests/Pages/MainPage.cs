@@ -1,15 +1,12 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.PageObjects;
 using WaitHelpers = SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading;
 using PicabuDummyTests.Bases;
-using PicabuDummyTests.Pages;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PicabuDummyTests
 {
@@ -23,43 +20,62 @@ namespace PicabuDummyTests
         public MainPage(IWebDriver driver) :
             base(driver)
         {
-            this.type = PagesCollection.MainPage;
+            this.type = RegisteredPages.MainPage;
         }
 
-        public bool IsAuthorizationFormVisible()
-        { 
-            return driver.FindElement(authorizationHeader).Displayed && LoginField.Displayed && PasswordField.Displayed;
-        }
+        public new MainPage OpenFilters() { return (MainPage)base.OpenFilters(); }
 
-        public bool IsCommentOfTheDayVisible()
+        public MainPage IsAuthorizationFormVisible()
         {
-            return driver.FindElement(commentOfDay).Displayed;
+            LogInfo("Checking the visibility of authorization form");
+            bool result = driver.FindElement(authorizationHeader).Displayed && LoginField.Displayed && PasswordField.Displayed;
+            Assert.IsTrue(result, "He отображена форма логина");
+            LogDebug("Authorization passed");
+            return this;
         }
 
-        public bool IsDateSelected()
+        public MainPage IsCommentOfTheDayVisible()
         {
+            LogInfo("Checking the visibility of day comment");
+            bool result = driver.FindElement(commentOfDay).Displayed;
+            Assert.IsTrue(result, "Bиджет 'коментарий дня' нe отображен");
+            LogDebug("Comment visible");
+            return this;
+        }
+
+        public MainPage IsDateSelected()
+        {
+            LogInfo("Checking if date selected");
             DateTime tempDate;
             string[] tokens = driver.Url.Split('/');
             string potentialDate = tokens[tokens.Length - 1];
-            bool validDate = DateTime.TryParseExact(potentialDate, dateFormats, DateTimeFormatInfo.InvariantInfo, DateTimeStyles.None, out tempDate);
-            return validDate;
+            bool validDate = DateTime.TryParseExact(potentialDate, dateFormats, DateTimeFormatInfo.InvariantInfo, dateTimeStyles, out tempDate);
+            Assert.IsFalse(validDate, "Дата выбрана");
+            LogDebug("Date was selected");
+            return this;
         }
 
-        public bool IsDesiredOptionChosen(string optionName)
+        public MainPage IsDesiredOptionChosen(string optionName)
         {
-            OpenFilters();
-            return driver.FindElement(selectedOption).Text == optionName;
+            LogInfo($"Checking if {optionName} selected");
+            Assert.IsTrue(driver.FindElement(selectedOption).Text == optionName, $"Selected option doesn't match the {optionName}");
+            LogDebug($"{optionName} was selected");
+            return this;
         }
 
-        public int IsShowListOpened()
+        public MainPage IsShowListOpened()
         {
+            LogInfo("Checking if show list opened");
             driver.FindElement(selectList).Click();
             var options = driver.FindElement(selectList).FindElements(dropdownOption);
-            return options.Count;
+            Assert.AreNotEqual(options.Count, 0);
+            LogDebug("Show list was selected");
+            return this;
         }
 
-        public int OpenPostLinks(int maxLinks)
+        public MainPage OpenPostLinks(int maxLinks)
         {
+            LogInfo($"Checking first {maxLinks} posts links");
             for (int i=0; i<maxLinks; i++)
             {
                 PostsLinks[i].Click();
@@ -68,36 +84,42 @@ namespace PicabuDummyTests
                 wait.Until(WaitHelpers.ExpectedConditions.VisibilityOfAllElementsLocatedBy(postTitle));
                 driver.SwitchTo().Window(windows.First());
             }
-            return driver.WindowHandles.Count;
+            Assert.AreEqual(driver.WindowHandles.Count, maxLinks + 1);
+            LogDebug($"First {maxLinks} posts links occurred");
+            return this;
         }
 
-        public bool IsArticlesContainPreview(int maxArticles)
+        public MainPage IsArticlesContainPreview(int maxArticles)
         {
+            LogInfo($"Checking if {maxArticles} articles contain preview");
             driver.Navigate().Refresh();
             var targetArticles = Articles.Take(maxArticles);
             foreach (IWebElement article in targetArticles)
             {
-                if (!article.FindElement(articlePreview).GetAttribute("class").Contains("content")) return false;
+                Assert.IsTrue(!article.FindElement(articlePreview).GetAttribute("class").Contains("content"), "No preview for article");
             }
-            return true;
+            LogDebug($"{maxArticles} articles contain preview");
+            return this;
         }
 
-        public void RollUpPosts()
+        public MainPage RollUpPosts()
         {
-            OpenFilters();
+            LogDebug("Rolling up posts");
             var selectElement = new SelectElement(driver.FindElement(selectList));
             selectElement.SelectByText("сворачивать");
+            return this;
         }
 
-        public bool IsArticlesDisplayedWithoutPreview(int maxArticles)
+        public MainPage IsArticlesDisplayedWithoutPreview(int maxArticles)
         {
-            RollUpPosts();
+            LogInfo($"Checking if {maxArticles} articles not contain preview");
             var targetArticles = Articles.Take(maxArticles);
             foreach (IWebElement article in targetArticles)
             {
-                if (article.FindElement(articlePreview).GetAttribute("class").Contains("content")) return false;
+                Assert.IsTrue(article.FindElement(articlePreview).GetAttribute("class").Contains("content"), "Preview displayed for article");
             }
-            return true;
+            LogDebug($"{maxArticles} articles not contain preview");
+            return this;
         }
     }
 }

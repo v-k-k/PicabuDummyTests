@@ -20,6 +20,7 @@ namespace PicabuDummyTests
 
         protected void LogStart(string testName)
         {
+            LogManager.Configuration.Variables["tab"] = "\t";
             LogManager.Configuration.Variables["step"] = Step;
             logger.Warn($"{DateTime.Now.ToString()}  *****   Started test: {testName}    *****");
         }
