@@ -1,12 +1,12 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using WaitHelpers = SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using PicabuDummyTests.Bases;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 
 namespace PicabuDummyTests
 {
@@ -81,7 +81,7 @@ namespace PicabuDummyTests
                 PostsLinks[i].Click();
                 var windows = driver.WindowHandles;
                 driver.SwitchTo().Window(windows.Last());
-                wait.Until(WaitHelpers.ExpectedConditions.VisibilityOfAllElementsLocatedBy(postTitle));
+                wait.UntilAllElementsVisible(postTitle);
                 driver.SwitchTo().Window(windows.First());
             }
             Assert.AreEqual(driver.WindowHandles.Count, maxLinks + 1);

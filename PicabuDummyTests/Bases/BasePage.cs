@@ -1,14 +1,7 @@
 ﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
-using SeleniumExtras.PageObjects;
-using WaitHelpers = SeleniumExtras.WaitHelpers;
 using System;
-using NLog;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using OpenQA.Selenium.Interactions;
-using System.Threading;
 using PicabuDummyTests.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -16,7 +9,7 @@ namespace PicabuDummyTests.Bases
 {
     class BasePage : ItemsBasis
     {
-        protected WebDriverWait wait;
+        protected WaitFor wait;
         protected IWebDriver driver;
         protected Actions actions;
         protected RegisteredPages type;
@@ -37,7 +30,7 @@ namespace PicabuDummyTests.Bases
         {
             this.driver = driver;
             actions = new Actions(driver);
-            wait = new WebDriverWait(this.driver, TimeSpan.FromSeconds(5));
+            wait = new WaitFor(driver);
         }
 
         public void NavigateAndCheckPageTab(By tab)
@@ -67,25 +60,23 @@ namespace PicabuDummyTests.Bases
         protected BasePage MemoizeDatesFromCalendarField(string dateFormat = null)
         {
             LogDebug("Memoizing dates from calendar fields");
-            if (dateFormat == null) dateFormat = dateFormats[2];
             string inputFromContent = (string)((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.getDateFrom);
             string inputToContent = (string)((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.getDateTo);
-            inputFromDate = DateTime.ParseExact(inputFromContent, dateFormat, invariantCulture, dateTimeStyles);
-            inputToDate = DateTime.ParseExact(inputToContent, dateFormat, invariantCulture, dateTimeStyles);
+            inputFromDate = DateTime.ParseExact(inputFromContent, dateFormat ?? dateFormats[2], invariantCulture, dateTimeStyles);
+            inputToDate = DateTime.ParseExact(inputToContent, dateFormat ?? dateFormats[2], invariantCulture, dateTimeStyles);
             return this;
         }
 
         protected BasePage UpdateDatesInCalendarFields(IWebElement calendarHead, DateTime from, DateTime to, string dateFormat = null)
         {
             LogDebug("Updating dates in calendar fields");
-            if (dateFormat == null) dateFormat = dateFormats[2];
             var dates = new List<DateHelper> { new DateHelper("from", from), new DateHelper("to", to) };
             for (int i = 0; i < dates.Count; i++)
             {
                 IWebElement field = calendarHead.FindElement(By.XPath($"div/div[{i + 1}]/input"));
                 while (true)
                 {
-                    var stringifiedDate = dates[i].date.ToString(dateFormat).Replace(".", "/");
+                    var stringifiedDate = dates[i].date.ToString(dateFormat ?? dateFormats[2]).Replace(".", "/");
                     var content = (string)((IJavaScriptExecutor)driver).ExecuteScript(string.Format(JsScriptsCollection.getContent, dates[i].name));
                     if (content == stringifiedDate) break;
                     field.Clear();
@@ -98,7 +89,7 @@ namespace PicabuDummyTests.Bases
         protected BasePage OpenFilters()
         {
             LogDebug("Opening filters");
-            wait.Until(WaitHelpers.ExpectedConditions.ElementToBeClickable(filtersButton));
+            wait.UntilElementBeClickable(filtersButton);
             driver.FindElement(filtersButton).Click();
             return this;
         }

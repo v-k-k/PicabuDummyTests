@@ -1,7 +1,6 @@
 ﻿using NLog;
 using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace PicabuDummyTests
 {
@@ -30,6 +29,11 @@ namespace PicabuDummyTests
             logger.Debug(msg);
         }
 
+        protected void LogWarning(string msg)
+        {
+            logger.Warn(msg);
+        }
+
         protected void LogInfo(string msg)
         {
             LogManager.Configuration.Variables["step"] = Step;
@@ -42,6 +46,14 @@ namespace PicabuDummyTests
             {
                 logger.Error(msg);
             }
+        }
+
+        protected void LogException(Exception e)
+        {
+            logger.Fatal(e.Message);
+            logger.Trace(e.ToString());
+            logger.Fatal(e.StackTrace);
+            logger.Error(e.Source);
         }
 
         protected void LogFinish(string testName)

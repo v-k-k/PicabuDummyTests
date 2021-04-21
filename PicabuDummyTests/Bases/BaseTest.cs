@@ -1,11 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NLog;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Events;
 using PicabuDummyTests.PageActions;
 using System;
-using System.Collections.Generic;
-using System.Text;
+
 
 namespace PicabuDummyTests.Bases
 {

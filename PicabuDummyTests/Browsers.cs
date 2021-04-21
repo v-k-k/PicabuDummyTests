@@ -19,21 +19,8 @@ namespace PicabuDummyTests
         private static readonly string firefoxWinRegistry = $"{baseWinRegistry}firefox.exe";
         private static string registryContainer;
 
-        private static Dictionary<string, string> chromeReleases = new Dictionary<string, string> 
-        { 
-            { "90", "90.0.4430.24" },
-            { "89", "89.0.4389.23" },
-            { "88", "88.0.4324.96" },
-            { "87", "87.0.4280.88" }
-        };
-
-        private static Dictionary<string, string> firefoxReleases = new Dictionary<string, string>
-        {
-            { "88", "0.29.1" },
-            { "89", "89.0.4389.23" },
-            { "57", "0.21.0" },
-            { "55", "0.20.1" }
-        };
+        private static Dictionary<string, string> chromeReleases => JsonHelper.Deserialize(Environment.chromeReleasesPath);
+        private static Dictionary<string, string> firefoxReleases => JsonHelper.Deserialize(Environment.firefoxReleasesPath);
 
         public static string GetLocalVersion(BrowserType _type)
         {

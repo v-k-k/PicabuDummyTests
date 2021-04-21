@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using PicabuDummyTests.Bases;
 using PicabuDummyTests.Utils;
-using WaitHelpers = SeleniumExtras.WaitHelpers;
+
 
 namespace PicabuDummyTests 
 {
@@ -44,7 +43,7 @@ namespace PicabuDummyTests
             while (true)
             {
                 try { if (PostsBottom.Displayed) break; }
-                catch (NoSuchElementException ex) { }
+                catch (NoSuchElementException ex) { LogException(ex); }
                 finally
                 {
                     foreach (IWebElement post in PostsRates)
@@ -54,7 +53,11 @@ namespace PicabuDummyTests
                             var rate = int.Parse(post.Text);
                             if (!result.Contains(rate)) result.Add(rate);
                         }
-                        catch (StaleElementReferenceException ex) { continue; }
+                        catch (StaleElementReferenceException ex) 
+                        {
+                            LogException(ex);
+                            continue; 
+                        }
                     }
                     ((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.scrollDown);
                 }
@@ -83,7 +86,7 @@ namespace PicabuDummyTests
             while (true)
             {
                 try { if (PostsBottom.Displayed) break; }
-                catch (NoSuchElementException ex) { }
+                catch (NoSuchElementException ex) { LogException(ex); }
                 finally
                 {
                     foreach (IWebElement dt in PostsDateTimes)
@@ -93,7 +96,11 @@ namespace PicabuDummyTests
                             var dateTime = Convert.ToDateTime(dt.GetAttribute("datetime"));
                             if (!result.Contains(dateTime)) result.Add(dateTime);
                         }
-                        catch (StaleElementReferenceException ex) { continue; }
+                        catch (StaleElementReferenceException ex) 
+                        { 
+                            LogException(ex); 
+                            continue; 
+                        }
                     }
                     ((IJavaScriptExecutor)driver).ExecuteScript(JsScriptsCollection.scrollDown);
                 }
