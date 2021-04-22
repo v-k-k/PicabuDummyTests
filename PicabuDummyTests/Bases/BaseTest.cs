@@ -10,7 +10,6 @@ namespace PicabuDummyTests.Bases
     {
         PagesCollectionContainer pages;
         ActionsCollection pageActions;
-        //private ScreenshotTaker ScreenshotTaker { get; set; }
         public EventFiringWebDriver Driver { get; private set; }
         public TestContext TestContext { get; set; }
 
@@ -25,13 +24,11 @@ namespace PicabuDummyTests.Bases
         public void Setup()
         {
             LogStart(TestContext.TestName);
-            //Reporter.AddTestCaseMetadataToHtmlReport(TestContext);
             Environment.Initialize();
             var factory = new WebDriverFactory();
             Driver = factory.Create(BrowserType.Chrome);
             pages = new PagesCollectionContainer(Driver);
             pageActions = new ActionsCollection(pages);
-            //ScreenshotTaker = new ScreenshotTaker(Driver, TestContext);
         }
 
         [TestCleanup]
@@ -39,7 +36,6 @@ namespace PicabuDummyTests.Bases
         {
             try
             {
-                //TakeScreenshotForTestFailure();
                 pageActions.ClearCollection();
                 pages.ClearCollection();
                 if (Driver == null) return;
@@ -56,15 +52,5 @@ namespace PicabuDummyTests.Bases
                 LogFinish(TestContext.TestName);
             }
         }
-
-        //private void TakeScreenshotForTestFailure()
-        //{
-        //    if (ScreenshotTaker != null)
-        //    {
-        //        ScreenshotTaker.CreateScreenshotIfTestFailed();
-        //        Reporter.ReportTestOutcome(ScreenshotTaker.ScreenshotFilePath);
-        //    }
-        //    else Reporter.ReportTestOutcome("");
-        //}
     }
 }

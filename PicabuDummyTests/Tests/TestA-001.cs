@@ -32,12 +32,11 @@ namespace PicabuDummyTests
             PageActions.GetBestPageActions().CheckPostsDatesInSelectedRange();
         }
 
-        [TestMethod, Priority(4), TestCategory("Dummy 004")]
+        [DataRow("показывать", 3)]
+        [DataTestMethod, Priority(4), TestCategory("Dummy 004")]
         [ExpectedException(typeof(AssertFailedException))]
-        public void TestCase_A004()
+        public void TestCase_A004(string desiredOption, int expectedTabs)
         {
-            var desiredOption = "показывать";
-            var expectedTabs = 3;
             PageActions.GetMainPageActions().NavigateAndCheckMainPageTab();
             PageActions.GetMainPageActions().CheckDesiredOptionsInShowListDropdown(desiredOption);
             PageActions.GetMainPageActions().OpenPostsAndCheckPreviews(expectedTabs);
